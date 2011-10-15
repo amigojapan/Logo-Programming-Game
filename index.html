@@ -1,0 +1,602 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<script type="text/javascript">
+
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-21132921-6']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+</head>
+<body>
+<div id="label1">If you can see this probably you dont have Javascript enabled. Initializing label...</div>
+
+<canvas id="myCanvas" width="300" height="300" style="border:1px solid #c3c3c3;">
+Your browser does not support the canvas element.
+</canvas>
+<textarea rows="14" cols="32" ID="history">
+Command History:
+</textarea>
+
+
+<script type="text/javascript">
+function DrawRect(x,y,width,height,Color){
+    //var cxt=c.getContext("2d");
+    cxt.fillStyle=Color;
+    cxt.fillRect(x,y,width,height);
+}
+/*
+function CCW(p1,p2,p3) {//Counter Clock Wise
+                        // three points are counter clock wise if ccw > 0
+                        //clockwise if ccw < 0 and colinear if ccw==0
+                        //because ccw is a determinant that gives the 
+                        //signed area of the tirangle formed by p1, p2 and p3.
+    return (p2.x - p1.x) * (p3.y - p1.y) - (p2.y - p1.y) * (p3.x - p1.x);
+}
+
+function general_line_intersection(a,b,c,d) {
+    if((CCW(a,c,d)>0) == (CCW(b,c,d)>0)){
+        return false;
+    } else {
+        if((CCW(a,b,c)>0)== (CCW(a,b,d)>0)) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+}
+
+function points_equal(a,b){
+    return ((a.x == b.x) && (a.y == b.y));
+}
+
+function overlapping_end_point(a,b,c,d) {
+    if(points_equal(a,c) || points_equal(a,d) 
+            || points_equal(b,c) || points_equal(b,d))
+    {
+        return true;
+    } else {
+        return false;
+    }
+}
+
+function colinear(a,b,c,d){
+    return ((CCW(a,b,d)== 0)  && (CCW(a,b,d)== 0));
+}
+
+function overlapping_interval(left1, right1, left2, right2){
+    return (left1 <= right2) && (left2 <= right1);
+}
+
+
+
+
+function overlapping_colinear(a,b,c,d){
+    var left_ab  = Math.min(a.x, b.x);
+    var top_ab   = Math.min(a.y, b.y);
+    var right_ab = Math.max(a.x, b.x);
+    var bot_ab  = Math.max(a.y, b.y);
+    var left_cd  = Math.min(c.x, d.x);
+    var top_cd   = Math.min(c.y, d.y);
+    var right_cd = Math.max(c.x, d.x);
+    var bot_cd  = Math.max(c.y, d.y);
+    
+    return (colinear(a,b,c,d)
+    && overlapping_interval(left_ab, right_ab, left_cd, right_cd)
+    && overlapping_interval(top_ab, bot_ab, top_cd, bot_cd)
+           );
+}
+
+function between(low,mid,high){
+    //returns true if mid is between low and high.
+    return (low <= mid) && (mid <= high);
+}
+
+function inside(a,c,b){
+    //returns true if c is inside a and b.
+    if(CCW(a,b,c) == 0){
+        var left  = Math.min(a.x, b.x);
+        var right = Math.max(a.x, b.x);
+        var top   = Math.min(a.y, b.y);
+        var bot   = Math.max(a.y, b.y);
+        return (between(left,c.x,right) && between(top,c.y,bot));
+    } else {
+        return false;
+    }    
+}
+
+function endpoint_inside_segment(a,b,c,d){
+    return (inside(a,c,b) || inside(a,d,b)
+            || inside(c,a,d) ||  inside(c,b,d));
+}
+
+
+
+function line_intersection(a,b,c,d) {
+    return (general_line_intersection(a,b,c,d)
+      || overlapping_end_point(a,b,c,d)
+      || overlapping_colinear(a,b,c,d)
+      || endpoint_inside_segment(a,b,c,d)
+      );
+}
+*/
+
+//---------------------------------------------------------------
+//Checks for intersection of Segment if as_seg is true.
+//Checks for intersection of Line if as_seg is false.
+//Return intersection of Segment AB and Segment EF as a Point
+//Return null if there is no intersection
+//---------------------------------------------------------------
+function lineIntersectLine(A,B,E,F,as_seg) {
+    var ip= new Object();
+    var a1=0;
+    var a2=0;
+    var b1=0;
+    var b2=0;
+    var c1=0;
+    var c2=0;
+ 
+    a1= B.y-A.y;
+    b1= A.x-B.x;
+    c1= B.x*A.y - A.x*B.y;
+    a2= F.y-E.y;
+    b2= E.x-F.x;
+    c2= F.x*E.y - E.x*F.y;
+ 
+    var denom=a1*b2 - a2*b1;
+    if (denom == 0) {
+        return null;
+    }
+    ip.x=(b1*c2 - b2*c1)/denom;
+    ip.y=(a2*c1 - a1*c2)/denom;
+ 
+    //---------------------------------------------------
+    //Do checks to see if intersection to endpoints
+    //distance is longer than actual Segments.
+    //Return null if it is with any.
+    //---------------------------------------------------
+    if(as_seg){
+        if(Math.pow(ip.x - B.x, 2) + Math.pow(ip.y - B.y, 2) > Math.pow(A.x - B.x, 2) + Math.pow(A.y - B.y, 2))
+        {
+           return null;
+        }
+        if(Math.pow(ip.x - A.x, 2) + Math.pow(ip.y - A.y, 2) > Math.pow(A.x - B.x, 2) + Math.pow(A.y - B.y, 2))
+        {
+           return null;
+        }
+ 
+        if(Math.pow(ip.x - F.x, 2) + Math.pow(ip.y - F.y, 2) > Math.pow(E.x - F.x, 2) + Math.pow(E.y - F.y, 2))
+        {
+           return null;
+        }
+        if(Math.pow(ip.x - E.x, 2) + Math.pow(ip.y - E.y, 2) > Math.pow(E.x - F.x, 2) + Math.pow(E.y - F.y, 2))
+        {
+           return null;
+        }
+    }
+    return ip;
+}
+
+// Returns 1 if the lines intersect, otherwise 0. In addition, if the lines 
+// intersect the intersection point may be stored in the floats i_x and i_y
+/*.
+function get_line_intersection(p0_x, p0_y, p1_x, p1_y, 
+    p2_x, p2_y, p3_x,  p3_y) {
+    var s1_x=0, s1_y=0, s2_x=0, s2_y=0;
+    s1_x = p1_x - p0_x;     s1_y = p1_y - p0_y;
+    s2_x = p3_x - p2_x;     s2_y = p3_y - p2_y;
+
+    var s_=0, t_=0;
+    s_ = (-s1_y * (p0_x - p2_x) + s1_x * (p0_y - p2_y)) / (-s2_x * s1_y + s1_x * s2_y);
+    t_ = ( s2_x * (p0_y - p2_y) - s2_y * (p0_x - p2_x)) / (-s2_x * s1_y + s1_x * s2_y);
+
+    if (s_ >= 0 && s_ <= 1 && t_ >= 0 && t_ <= 1)
+    {
+        // Collision detected
+        //if (i_x != null)
+            var i_x = p0_x + (t_ * s1_x);
+        //if (i_y != null)
+            var i_y = p0_y + (t_ * s1_y);
+        return 1;
+    }
+
+    return 0; // No collision
+}
+*/
+        
+function fd_(distance,obj) {//primitive for drawing foward
+    cxt.moveTo(obj.x,obj.y);
+    angle_radians=obj.angle*Math.PI/180;//converts degrees to radians
+    var newx=obj.x+distance*Math.cos(angle_radians);
+    var newy=obj.y+distance*Math.sin(angle_radians);
+    obj.x=newx;
+    obj.y=newy;
+    cxt.lineTo(newx,newy);
+    cxt.strokeStyle="#0000FF";
+    cxt.stroke();
+    cxt.beginPath();
+}
+function fd__(distance) {//drawing foward with distance calculations
+	var x=0,y=0,angle=0;
+    if(pixels_left-distance<0) {
+        alert("You do not have enough ink to complete this move!");
+        return;
+    }
+    if(turn=="player1") {
+        x=player1.x;
+        y=player1.y;
+        angle=player1.angle;
+    } else {
+        x=player2.x;
+        y=player2.y;
+        angle=player2.angle;
+    }        
+    cxt.moveTo(x,y);
+    angle_radians=angle*Math.PI/180;//converts degrees to radians
+    var newx=x+distance*Math.cos(angle_radians);
+    var newy=y+distance*Math.sin(angle_radians);
+    if(turn=="player1") {
+        player1.x=newx;
+        player1.y=newy;
+    } else {
+        player2.x=newx;
+        player2.y=newy;
+    }        
+    cxt.lineTo(newx,newy);
+    cxt.stroke();
+    cxt.beginPath();
+    //collision detection
+    //compare collision with every line in the array
+    for (l in line_array) {
+        //if(l==line_array.length-1) break;//skip the last line
+		//skip last line(to prevent collision with it next move)
+		if(turn=="player1") {
+			if(l==player1.prev_line_number-1) continue;
+		} else {
+			if(l==player2.prev_line_number-1) continue;
+		}        
+
+        a_= new Object();
+        a_.x=line_array[l].startx;
+        a_.y=line_array[l].starty;
+        b_= new Object();
+        b_.x=line_array[l].endx;
+        b_.y=line_array[l].endy;
+        c_= new Object();
+        c_.x=x;
+        c_.y=y;
+        d_= new Object();
+        d_.x=newx;
+        d_.y=newy;
+        //if(line_intersection(a,b,c_,d)) alert("line intersects");
+        if(lineIntersectLine(a_,b_,c_,d_,true)){
+			/*
+	        console.log("a_.x"+a_.x);
+	        console.log("a_.y"+a_.y);
+	        console.log("b_.x"+b_.x);
+	        console.log("b_.y"+b_.y);
+	        console.log("c_.x"+c_.x);
+	        console.log("c_.y"+c_.y);
+	        console.log("d_.x"+d_.x);
+	        console.log("d_.y"+d_.y);
+			console.log("turn"+turn);
+			*/
+			
+			//draw green line on first intersecting line
+			cxt.moveTo(a_.x,a_.y);
+			cxt.lineTo(b_.x,b_.y);
+			cxt.strokeStyle="#00FF00";
+			cxt.stroke();
+			cxt.beginPath();    
+			cxt.moveTo(c_.x,c_.y);
+			cxt.lineTo(d_.x,d_.y);
+			//draw red line on second intersecting line
+			cxt.strokeStyle="#FF0000";
+			cxt.stroke();
+			cxt.beginPath();
+			if(document.getElementById('cd').checked==true){//if collision detection is enabled
+				alert("line intersects");
+				//alert(document.getElementById('cd').checked);
+			}
+		}
+        //if(get_line_intersection(a.x, a.y, b.x, b.y, c_.x, c_.y, d.x,  d.y)==1) alert("line intersects");
+    }
+
+    
+    //add line to array of llines
+    lineobj= new Object();
+    lineobj.startx=x;lineobj.starty=y;
+    lineobj.endx=newx;lineobj.endy=newy;
+    line_array.push(lineobj);
+	//store last line(to prevent collision with it next move)
+	if(turn=="player1") {
+        player1.prev_line_number=line_array.length;
+    } else {
+        player2.prev_line_number=line_array.length;
+    }        
+    
+	//check to see if turle is out of the area
+    if(newx>c.width || newy>c.height || newx<0 || newy<0) alert("You went out of the screen");
+    
+    //change turn if nessesary
+    pixels_left=pixels_left-distance;
+    if(pixels_left==0) {
+        pixels_left=document.getElementById('ppt').value;
+        if(turn=="player1") turn="player2"; else turn="player1";
+    }        
+    update_label1();
+}
+function fd(distance) {
+    //DrawRect(0,0,c.width,c.height,"#FFFFFF");//cxt.clearRect(0,0,c.width,c.height);//
+    //c.getContext('2d').clearRect(0,0,c.width,c.height);//should clear canvas, but doesn't
+    c.width=c.width;//clear canvas
+    cxt.putImageData(image,0,0);//restore canvas
+    fd__(distance);
+    image=cxt.getImageData(0,0,c.width,c.height);//save canvas
+    //c.width=c.width;//clear canvas
+    //cxt.putImageData(image,0,0);//restore canvas
+    //cxt.save();
+    draw_turtle(player1);
+    draw_turtle(player2);
+    document.getElementById('history').value=document.getElementById('history').value+turn+": fd("+distance+");\n";//add to history
+}
+function cs() {
+    //DrawRect(0,0,c.width,c.height,"#FFFFFF");//cxt.clearRect(0,0,c.width,c.height);//
+    //cxt.clearRect(0,0,c.width,c.height);//should clear canvas, but doesn't
+    c.width=c.width;//clear canvas
+    
+    //cxt.fillStyle="#FF0000";
+    //cxt.fillRect(0,0,c.width,c.height);
+    //DrawRect(0,0,c.width,c.height,"#FF0000");
+    for (l in line_array) {
+        //if(l==line_array.length-1) break;//skip the current line
+        a_= new Object();
+        a_.x=line_array[l].startx;
+        a_.y=line_array[l].starty;
+        b_= new Object();
+        b_.x=line_array[l].endx;
+        b_.y=line_array[l].endy;
+        
+		cxt.moveTo(a_.x,a_.y);
+		cxt.lineTo(b_.x,b_.y);
+		cxt.strokeStyle="#0000FF";
+		cxt.stroke();
+		cxt.beginPath();    
+    }
+		cxt.moveTo(150,50);
+		cxt.lineTo(244,84);
+		cxt.strokeStyle="#00FF00";
+		cxt.stroke();
+		cxt.beginPath();    
+		cxt.moveTo(244,84);
+		cxt.lineTo(294,170);
+		cxt.strokeStyle="#FF0000";
+		cxt.stroke();
+		cxt.beginPath();    
+	
+
+    //DrawRect(0,0,c.width,c.height,"#FFFFFF");
+    //draw_turtle(player1);
+    //draw_turtle(player2);
+    //document.getElementById('history').value=document.getElementById('history').value+turn+": cs();\n";//add to history
+}
+
+
+function lt(degrees_left) {
+    //DrawRect(0,0,c.width,c.height,"#FFFFFF");//cxt.clearRect(0,0,c.width,c.height);//c.width=c.width;//clear canvas
+    c.width=c.width;//clear canvas
+    cxt.putImageData(image,0,0);//restore canvas
+    if(turn=="player1") {
+        lt_(degrees_left,player1);
+    } else {
+        lt_(degrees_left,player2);
+    }        
+    image=cxt.getImageData(0,0,c.width,c.height);//save canvas
+    cxt.save();
+    draw_turtle(player1);
+    draw_turtle(player2);
+    document.getElementById('history').value=document.getElementById('history').value+turn+": lt("+degrees_left+");\n";//add to history
+}
+
+function rt(degrees_right) {
+    c.width=c.width;//clear canvas
+    //DrawRect(0,0,c.width,c.height,"#FFFFFF");//cxt.clearRect(0,0,c.width,c.height);//c.width=c.width;//clear canvas
+    cxt.putImageData(image,0,0);//restore canvas
+    if(turn=="player1") {
+        rt_(degrees_right,player1);
+    } else {
+        rt_(degrees_right,player2);
+    }        
+    image=cxt.getImageData(0,0,c.width,c.height);//save canvas
+    cxt.save();
+    draw_turtle(player1);
+    draw_turtle(player2);
+        document.getElementById('history').value=document.getElementById('history').value+turn+": rt("+degrees_right+");\n";//add to history
+}
+function lt_(degrees_left,obj) {
+    obj.angle=obj.angle-degrees_left;
+}
+
+function rt_(degrees_right,obj) {
+    obj.angle=obj.angle+degrees_right;
+}
+
+function draw_turtle(obj) {
+    rt_(90,obj);
+    fd_(turtle_size,obj);
+    lt_(90+(90/2),obj);             
+    fd_(turtle_size*Math.sqrt(2),obj);
+    lt_(90,obj);
+    fd_(turtle_size*Math.sqrt(2),obj);
+    lt_(90+(90/2),obj);
+    fd_(turtle_size,obj);
+    lt_(90,obj);
+}
+
+function evaluate2() {
+	try {
+	    //alert(document.getElementById('command').value);
+	    eval(document.getElementById('funct').value+" "+document.getElementById('command').value);
+	} catch(err) {
+		txt="There was an error in your statement/program.\n";
+		txt+="Error description: " + err.description + "\n";
+		alert(txt);
+		result="Error.";
+	}
+}    
+
+function evaluate1() {
+    //alert(document.getElementById('funct').value);
+    eval(document.getElementById('funct').value);
+}    
+function update_label1() {
+    document.getElementById('label1').innerHTML=turn+"'s turn, "+pixels_left+" pixels left of ink.";
+}
+
+function load() {
+        //document.getElementById('label1').innerHTML=turn+"'s turn";
+}
+window.onload = load;
+
+function set_ppt() {
+    pixels_left=document.getElementById('ppt').value;
+    update_label1();
+}
+function fdbutton() {
+	//eval("fd("+document.getElementById('fdammount').value+");");
+	fd(document.getElementById('fdammount').value);
+}
+function rtbutton() {
+	eval("rt("+document.getElementById('rtammount').value+");");
+	//rt(document.getElementById('rtammount').value);
+	//alert(document.getElementById('rtammount').value);
+	//rt(document.getElementById('rtammount').value);
+}
+function ltbutton() {
+	lt(document.getElementById('ltammount').value);
+}
+function single_player_mode() {
+	document.getElementById('cd').checked=false;
+	document.getElementById('ppt').value="10000000000";
+	set_ppt();
+}
+function two_player_mode() {
+	document.getElementById('cd').checked=true;
+	document.getElementById('ppt').value="100";
+	set_ppt();
+}
+
+
+var c=document.getElementById("myCanvas");
+var cxt=c.getContext("2d");
+var turtle_size = 10;
+player1 = {
+    x : 50,
+    y : 50,
+    angle : 0,
+    prev_line_number :0//used to prevent collision with previously drawn line
+};
+player2 = {
+    x : 250,
+    y : 250,
+    angle : 180,
+    prev_line_number :0//used to prevent collision with previously drawn line
+};
+
+
+var image=cxt.getImageData(0,0,c.width,c.height);
+draw_turtle(player1);
+draw_turtle(player2);
+var pixels_left=100;//document.getElementById('ppt').value;
+var turn="player1";
+update_label1();
+var line_array = [];
+</script>
+<BR>
+<BR>fd(distance)   foward
+<BR>lt(angle) turn left degrees
+<BR>rt(angle) turn right degrees
+<BR>
+<input type="text" ID="command"> <input type="button" value="evaluate" onclick="evaluate2()">
+<input type="button" value="cs()" onclick="cs()">
+<BR>
+<table border="1">
+	<tr>
+		<td>
+			fd(<input type="text" value="100" id="fdammount" style="width: 25px;">);<input type="button" value="eval" onclick="fdbutton()">;
+		</td>
+		<td>
+			rt(<input type="text" value="90" id="rtammount" style="width: 25px;">);<input type="button" value="eval" onclick="rtbutton()">;
+		</td>
+		<td>
+			lt(<input type="text" value="90" id="ltammount" style="width: 25px;">);<input type="button" value="eval" onclick="ltbutton()">;
+		</td>
+	</tr>
+</table>
+<BR>
+<textarea rows="8" cols="32" ID="funct">
+//function list (enter functions in JavaScript)
+function square(l) {
+   fd(l);
+   rt(90);
+   fd(l);
+   rt(90);
+   fd(l);
+   rt(90);
+   fd(l);
+   rt(90);
+}
+function stair() {
+   for(foobar=0;foobar<5;foobar++) {
+       rt(90);
+       fd(10);
+       lt(90);
+       fd(10);
+   }
+}
+function chair(l){
+   square(l);
+   fd(l*2);
+}
+function chairchain(l){
+   rt(20);
+   fd(l);
+   for(foo=1;foo<=10;foo++){
+      rt(20);
+       chair(foo);
+   }
+}
+function house() {
+	fd(100);
+	lt(135);
+	fd(100);
+	lt(90);
+	fd(30);
+	lt(45);
+	square(150);
+}
+</textarea>
+<BR>
+pixels per turn:<input type="text" ID="ppt" value="100"> <input type="button" value="set" onclick="set_ppt()">
+collision detection on:<input type="checkbox" ID="cd" checked="checked">
+<input type="button" value="two player mode" onclick="two_player_mode()">
+<input type="button" value="single player mode" onclick="single_player_mode()">
+<BR>Please add any interesting functions you create to the comments section below. if they dont fit in one comment use <a href="http://pastebin.com" target="_blank">http://pastebin.com</a> and paste the link
+<!-- begin htmlcommentbox.com -->
+ <div id="HCB_comment_box"><a href="http://www.htmlcommentbox.com">HTML Comment Box</a> is loading comments...</div>
+ <link rel="stylesheet" type="text/css" href="http://www.htmlcommentbox.com/static/skins/simple/skin.css" />
+ <script type="text/javascript" language="javascript" id="hcb"> /*<!--*/ if(!window.hcb_user){hcb_user={  };} (function(){s=document.createElement("script");s.setAttribute("type","text/javascript");s.setAttribute("src", "http://www.htmlcommentbox.com/jread?page="+escape((window.hcb_user && hcb_user.PAGE)||(""+window.location)).replace("+","%2B")+"&mod=%241%24wq1rdBcg%24Jz6kdIcrNrVLA6vgjX5/z0"+"&opts=478&num=10");if (typeof s!="undefined") document.getElementsByTagName("head")[0].appendChild(s);})(); /*-->*/ </script>
+<!-- end htmlcommentbox.com -->
+
+<center><script type="text/javascript" src="http://ss.webring.com/navbar?f=j;y=usmpadow;u=defurl"></script> Navigation by <a href="http://dir.webring.com/rw" target=_top>WebRing</a>.</center> <!--optional--> <noscript><center><table bgcolor=gray cellspacing=0 border=2 bordercolor=red> <tr><td><table cellpadding=2 cellspacing=0 border=0><tr><td align=center> This site is a member of WebRing. Visit <a href="http://ss.webring.com/navbar?f=l;y=usmpadow;u=defurl"> here</a>.</td></tr></table></td></tr></table></center></noscript> 
+</body>
+</html>
+
+
